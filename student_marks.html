@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Marks | Sree Venkateswara College of Engineering</title>
+<style>
+:root{--navy:#12345a;--blue:#1769aa;--light:#eef5fc;--ink:#1d2b3a;--muted:#6b7b8c;--line:#dce5ee;--green:#16845b;--red:#c34242;--amber:#a66b12;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:var(--ink);font:15px/1.5 Arial,Helvetica,sans-serif}
+header{background:linear-gradient(115deg,#12345a,#1769aa);color:white;padding:24px max(20px,calc((100% - 1250px)/2));}
+header h1{margin:0;font-size:27px}header p{margin:5px 0 0;color:#dcecff}
+.wrap{max-width:1250px;margin:24px auto;padding:0 18px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+nav button,.btn{border:0;border-radius:8px;padding:10px 15px;cursor:pointer;font-weight:600;background:#e6eef7;color:#214362}
+nav button.active,.btn.primary{background:var(--blue);color:white}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.danger{background:#fff0f0;color:var(--red)}.btn.ghost{background:#eef3f8;color:#29445e}
+.panel{display:none}.panel.active{display:block}
+.card{background:white;border:1px solid var(--line);border-radius:13px;padding:18px;margin-bottom:18px;box-shadow:0 3px 12px #193b5a08}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.stat small{color:var(--muted)}.stat strong{display:block;font-size:27px;margin-top:5px;color:var(--navy)}
+h2{font-size:20px;margin:0 0 15px;color:var(--navy)}h3{font-size:16px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+label{display:block;font-weight:600;font-size:13px;margin-bottom:5px;color:#40566c}
+input,select{width:100%;padding:10px 11px;border:1px solid #cbd8e5;border-radius:7px;background:white;color:var(--ink);font:inherit}
+input:focus,select:focus{outline:2px solid #b7d8f5;border-color:var(--blue)}
+.field{margin-bottom:12px}.marks{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}
+th,td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line);font-size:13px}
+th{background:#f2f6fa;color:#40566c;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+.pill{display:inline-block;padding:3px 9px;border-radius:30px;font-weight:700;font-size:12px}
+.pass{background:#e4f5ed;color:#13764f}.fail{background:#ffeded;color:#b33434}.grade{background:#e8f1fc;color:#175b98}
+.muted{color:var(--muted)}.toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input{max-width:320px}.empty{text-align:center;padding:25px;color:var(--muted)}
+#chart{width:100%;height:260px;display:block}
+.report-head{text-align:center;border-bottom:2px solid var(--navy);padding-bottom:12px;margin-bottom:15px}
+.report-head h2{margin:0}.report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.report-grid div{background:#f3f7fb;padding:10px;border-radius:7px}
+.report-grid small{display:block;color:var(--muted)}.report-grid strong{font-size:18px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.marks{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.report-grid{grid-template-columns:1fr 1fr}header h1{font-size:22px}}
+@media print{body{background:white}.no-print,header,nav,footer{display:none!important}.wrap{margin:0;max-width:none;padding:0}.panel{display:none!important}#report.panel.active{display:block!important}.card{box-shadow:none;border:0}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Student Marks</h1>
+  <p>Sree Venkateswara College of Engineering · College Marks Management</p>
+</header>
+<div class="wrap">
+<nav class="no-print">
+  <button class="active" data-tab="dashboard">Dashboard</button>
+  <button data-tab="students">Students</button>
+  <button data-tab="add">Add / Edit Student</button>
+  <button data-tab="analytics">Performance</button>
+  <button data-tab="report">Report Card</button>
+</nav>
+
+<section id="dashboard" class="panel active">
+  <div class="stats">
+    <div class="card stat"><small>Total Students</small><strong id="totalStudents">0</strong></div>
+    <div class="card stat"><small>Class Average</small><strong id="classAverage">0%</strong></div>
+    <div class="card stat"><small>Pass Rate</small><strong id="passRate">0%</strong></div>
+    <div class="card stat"><small>Topper</small><strong id="topperName" style="font-size:19px">—</strong></div>
+  </div>
+  <div class="card">
+    <div class="toolbar"><h2>Class Rankings</h2><button class="btn primary no-print" onclick="showTab('add')">+ Add Student</button></div>
+    <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Student</th><th>Roll No.</th><th>Total</th><th>Percentage</th><th>Grade</th><th>Result</th></tr></thead><tbody id="rankTable"></tbody></table></div>
+  </div>
+  <div class="card"><h2>Grading System</h2>
+    <div class="tablewrap"><table><thead><tr><th>Percentage</th><th>Grade</th><th>Meaning</th></tr></thead><tbody>
+      <tr><td>90–100%</td><td>A+</td><td>Outstanding</td></tr><tr><td>80–89.99%</td><td>A</td><td>Excellent</td></tr><tr><td>70–79.99%</td><td>B</td><td>Very Good</td></tr><tr><td>60–69.99%</td><td>C</td><td>Good</td></tr><tr><td>50–59.99%</td><td>D</td><td>Average</td></tr><tr><td>35–49.99%</td><td>E</td><td>Pass</td></tr><tr><td>Below 35% or any subject below 35</td><td>F</td><td>Fail</td></tr>
+    </tbody></table></div><p class="muted">Passing requirement: at least 35 marks in every subject.</p>
+  </div>
+</section>
+
+<section id="students" class="panel">
+  <div class="card">
+    <div class="toolbar"><h2>Student Records</h2><input id="search" placeholder="Search name or roll number..." oninput="renderStudents()"></div>
+    <div class="tablewrap"><table><thead><tr><th>Student</th><th>Roll No.</th><th>Attendance</th><th>Total / 500</th><th>Percentage</th><th>Grade</th><th>Result</th><th class="no-print">Actions</th></tr></thead><tbody id="studentTable"></tbody></table></div>
+    <p class="muted">Use Edit to update marks or attendance. Delete permanently removes the selected record from this browser.</p>
+  </div>
+</section>
+
+<section id="add" class="panel">
+  <div class="card">
+    <h2 id="formTitle">Add Student</h2>
+    <form id="studentForm">
+      <input type="hidden" id="editId">
+      <div class="grid">
+        <div class="field"><label for="name">Student Name *</label><input id="name" required placeholder="Enter full name"></div>
+        <div class="field"><label for="roll">Roll Number *</label><input id="roll" required placeholder="e.g. SVCE001"></div>
+        <div class="field"><label for="attendance">Attendance (%)</label><input id="attendance" type="number" min="0" max="100" value="90"></div>
+        <div class="field"><label for="className">Class / Section</label><input id="className" placeholder="e.g. CSE - II Year"></div>
+      </div>
+      <h3>Subject Marks (each out of 100)</h3>
+      <div class="marks" id="markInputs"></div>
+      <div class="actions"><button class="btn primary" type="submit">Save Student</button><button class="btn ghost" type="button" onclick="resetForm()">Clear</button></div>
+    </form>
+  </div>
+</section>
+
+<section id="analytics" class="panel">
+  <div class="card"><h2>Subject-wise Class Average</h2><canvas id="chart" width="900" height="260"></canvas><p class="muted">The chart updates automatically using the marks entered for all students.</p></div>
+  <div class="card"><h2>Top Performers</h2><div id="topList"></div></div>
+</section>
+
+<section id="report" class="panel">
+  <div class="card no-print">
+    <h2>Student Report Card</h2>
+    <div class="field"><label for="reportStudent">Choose student</label><select id="reportStudent" onchange="renderReport()"><option value="">Select a student</option></select></div>
+    <div class="actions"><button class="btn primary" onclick="printReport()">Print Report</button><button class="btn ghost" onclick="downloadReport()">Download Report (HTML)</button></div>
+  </div>
+  <div class="card" id="reportContent"><div class="empty">Choose a student to view their report card.</div></div>
+</section>
+<footer>Student Marks · Static HTML application · Records are stored in this browser only.</footer>
+</div>
+
+<script>
+const SUBJECTS = ["Subject 1","Subject 2","Subject 3","Subject 4","Subject 5"];
+const STORAGE_KEY = "svce_student_marks_v1";
+const sampleStudents = [
+ {id:"s1",name:"Haneesh",roll:"SVCE001",attendance:96,className:"College",marks:[95,92,94,91,96]},
+ {id:"s2",name:"Sreedhar",roll:"SVCE002",attendance:94,className:"College",marks:[92,94,90,93,91]},
+ {id:"s3",name:"Arjun",roll:"SVCE003",attendance:88,className:"College",marks:[68,72,65,70,69]},
+ {id:"s4",name:"Abhilash",roll:"SVCE004",attendance:82,className:"College",marks:[42,38,45,40,36]},
+ {id:"s5",name:"Nikhilesh",roll:"SVCE005",attendance:90,className:"College",marks:[70,66,73,68,71]}
+];
+let students = loadStudents();
+function loadStudents(){try{const data=localStorage.getItem(STORAGE_KEY);return data?JSON.parse(data):sampleStudents.map(s=>({...s,marks:[...s.marks]}));}catch(e){return sampleStudents.map(s=>({...s,marks:[...s.marks]}));}}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(students));}
+function calc(s){const total=s.marks.reduce((a,b)=>a+Number(b||0),0),pct=total/5;const passed=s.marks.every(m=>Number(m)>=35);let grade="F";if(passed){if(pct>=90)grade="A+";else if(pct>=80)grade="A";else if(pct>=70)grade="B";else if(pct>=60)grade="C";else if(pct>=50)grade="D";else grade="E";}return {total,pct,passed,grade};}
+function ranked(){return [...students].sort((a,b)=>calc(b).pct-calc(a).pct);}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function showTab(id){document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active",p.id===id));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));if(id==="analytics")drawChart();if(id==="report")updateReportSelect();}
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+function renderAll(){renderDashboard();renderStudents();updateReportSelect();renderTopList();if(document.getElementById("analytics").classList.contains("active"))drawChart();}
+function renderDashboard(){
+ const n=students.length,avg=n?students.reduce((a,s)=>a+calc(s).pct,0)/n:0,pass=n?students.filter(s=>calc(s).passed).length/n*100:0,top=ranked()[0];
+ document.getElementById("totalStudents").textContent=n;document.getElementById("classAverage").textContent=avg.toFixed(1)+"%";document.getElementById("passRate").textContent=pass.toFixed(0)+"%";document.getElementById("topperName").textContent=top?top.name:"—";
+ document.getElementById("rankTable").innerHTML=n?ranked().map((s,i)=>{const c=calc(s);return `<tr><td>${i+1}</td><td>${esc(s.name)}</td><td>${esc(s.roll)}</td><td>${c.total}/500</td><td>${c.pct.toFixed(1)}%</td><td><span class="pill grade">${c.grade}</span></td><td><span class="pill ${c.passed?"pass":"fail"}">${c.passed?"Pass":"Fail"}</span></td></tr>`}).join(""):'<tr><td colspan="7" class="empty">No student records yet.</td></tr>';
+}
+function renderStudents(){
+ const q=(document.getElementById("search")?.value||"").toLowerCase(),list=ranked().filter(s=>s.name.toLowerCase().includes(q)||s.roll.toLowerCase().includes(q));
+ document.getElementById("studentTable").innerHTML=list.length?list.map(s=>{const c=calc(s);return `<tr><td>${esc(s.name)}</td><td>${esc(s.roll)}</td><td>${Number(s.attendance)||0}%</td><td>${c.total}/500</td><td>${c.pct.toFixed(1)}%</td><td><span class="pill grade">${c.grade}</span></td><td><span class="pill ${c.passed?"pass":"fail"}">${c.passed?"Pass":"Fail"}</span></td><td class="no-print"><button class="btn ghost" onclick="editStudent('${s.id}')">Edit</button> <button class="btn danger" onclick="deleteStudent('${s.id}')">Delete</button> <button class="btn ghost" onclick="openReport('${s.id}')">Report</button></td></tr>`}).join(""):'<tr><td colspan="8" class="empty">No matching students found.</td></tr>';
+}
+function renderTopList(){const list=ranked().slice(0,5);document.getElementById("topList").innerHTML=list.length?list.map((s,i)=>`<p><strong>${i+1}. ${esc(s.name)}</strong> — ${calc(s).pct.toFixed(1)}% (${calc(s).grade})</p>`).join(""):'<p class="empty">No students available.</p>';}
+function makeMarkInputs(){document.getElementById("markInputs").innerHTML=SUBJECTS.map((s,i)=>`<div class="field"><label for="mark${i}">${s}</label><input id="mark${i}" type="number" min="0" max="100" required value="0"></div>`).join("");}
+function resetForm(){document.getElementById("studentForm").reset();document.getElementById("editId").value="";document.getElementById("attendance").value=90;document.getElementById("formTitle").textContent="Add Student";SUBJECTS.forEach((_,i)=>document.getElementById("mark"+i).value=0);}
+function editStudent(id){const s=students.find(x=>x.id===id);if(!s)return;showTab("add");document.getElementById("editId").value=s.id;document.getElementById("name").value=s.name;document.getElementById("roll").value=s.roll;document.getElementById("attendance").value=s.attendance;document.getElementById("className").value=s.className||"";s.marks.forEach((m,i)=>document.getElementById("mark"+i).value=m);document.getElementById("formTitle").textContent="Edit Student";}
+function deleteStudent(id){const s=students.find(x=>x.id===id);if(!s||!confirm("Delete "+s.name+"'s record?"))return;students=students.filter(x=>x.id!==id);save();renderAll();}
+document.getElementById("studentForm").addEventListener("submit",e=>{e.preventDefault();const id=document.getElementById("editId").value,name=document.getElementById("name").value.trim(),roll=document.getElementById("roll").value.trim(),attendance=Number(document.getElementById("attendance").value),marks=SUBJECTS.map((_,i)=>Number(document.getElementById("mark"+i).value)),className=document.getElementById("className").value.trim();if(marks.some(m=>!Number.isFinite(m)||m<0||m>100)){alert("Enter marks between 0 and 100 for every subject.");return;}if(!Number.isFinite(attendance)||attendance<0||attendance>100){alert("Attendance must be between 0 and 100.");return;}if(students.some(s=>s.roll.toLowerCase()===roll.toLowerCase()&&s.id!==id)){alert("That roll number already exists.");return;}const record={id:id||("st"+Date.now()),name,roll,attendance,className,marks};if(id)students=students.map(s=>s.id===id?record:s);else students.push(record);save();resetForm();renderAll();showTab("students");});
+function updateReportSelect(){const sel=document.getElementById("reportStudent"),current=sel.value;sel.innerHTML='<option value="">Select a student</option>'+ranked().map(s=>`<option value="${s.id}">${esc(s.name)} (${esc(s.roll)})</option>`).join("");if(students.some(s=>s.id===current))sel.value=current;}
+function openReport(id){showTab("report");document.getElementById("reportStudent").value=id;renderReport();}
+function renderReport(){const id=document.getElementById("reportStudent").value,s=students.find(x=>x.id===id),el=document.getElementById("reportContent");if(!s){el.innerHTML='<div class="empty">Choose a student to view their report card.</div>';return;}const c=calc(s),rank=ranked().findIndex(x=>x.id===id)+1;el.innerHTML=`<div class="report-head"><h2>Sree Venkateswara College of Engineering</h2><div>STUDENT ACADEMIC REPORT CARD</div></div><div class="report-grid"><div><small>Student Name</small><strong>${esc(s.name)}</strong></div><div><small>Roll Number</small><strong>${esc(s.roll)}</strong></div><div><small>Class / Section</small><strong>${esc(s.className||"—")}</strong></div><div><small>Attendance</small><strong>${Number(s.attendance)||0}%</strong></div><div><small>Class Rank</small><strong>${rank}</strong></div><div><small>Overall Result</small><strong>${c.passed?"PASS":"FAIL"}</strong></div></div><h3>Subject-wise Marks</h3><div class="tablewrap"><table><thead><tr><th>Subject</th><th>Maximum Marks</th><th>Marks Obtained</th><th>Result</th></tr></thead><tbody>${SUBJECTS.map((sub,i)=>`<tr><td>${sub}</td><td>100</td><td>${s.marks[i]}</td><td>${s.marks[i]>=35?"Pass":"Fail"}</td></tr>`).join("")}</tbody><tfoot><tr><th>Total</th><th>500</th><th>${c.total}</th><th></th></tr></tfoot></table></div><div class="report-grid"><div><small>Percentage</small><strong>${c.pct.toFixed(2)}%</strong></div><div><small>Grade</small><strong>${c.grade}</strong></div><div><small>Final Result</small><strong>${c.passed?"PASS":"FAIL"}</strong></div></div><p class="muted">Grading: A+ 90–100 · A 80–89 · B 70–79 · C 60–69 · D 50–59 · E 35–49 · F below 35 or any subject below 35.</p>`;}
+function printReport(){if(!document.getElementById("reportStudent").value){alert("Please select a student first.");return;}window.print();}
+function downloadReport(){const id=document.getElementById("reportStudent").value;if(!id){alert("Please select a student first.");return;}const content=document.getElementById("reportContent").innerHTML;const doc=`<!doctype html><html><head><meta charset="utf-8"><title>Student Report</title><style>body{font-family:Arial;margin:35px;color:#1d2b3a}.report-head{text-align:center;border-bottom:2px solid #12345a;padding-bottom:12px}.report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0}.report-grid div{background:#f3f7fb;padding:10px}small{display:block;color:#667}table{width:100%;border-collapse:collapse}td,th{padding:10px;border-bottom:1px solid #ddd;text-align:left}</style></head><body>${content}</body></html>`;const blob=new Blob([doc],{type:"text/html"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="student-report.html";a.click();URL.revokeObjectURL(url);}
+function drawChart(){const canvas=document.getElementById("chart"),ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.font="14px Arial";ctx.fillStyle="#536779";ctx.strokeStyle="#dce5ee";for(let v=0;v<=100;v+=20){const y=h-35-(v/100)*(h-65);ctx.beginPath();ctx.moveTo(48,y);ctx.lineTo(w-15,y);ctx.stroke();ctx.fillText(v+"%",8,y+5);}const averages=SUBJECTS.map((_,i)=>students.length?students.reduce((a,s)=>a+Number(s.marks[i]),0)/students.length:0),slot=(w-85)/5;averages.forEach((v,i)=>{const bh=(v/100)*(h-65),x=55+i*slot+slot*.2,y=h-35-bh;ctx.fillStyle="#2879bb";ctx.fillRect(x,y,slot*.55,bh);ctx.fillStyle="#334b60";ctx.textAlign="center";ctx.fillText(v.toFixed(1),x+slot*.275,y-8);ctx.fillText("Sub "+(i+1),x+slot*.275,h-10);});ctx.textAlign="left";}
+makeMarkInputs();renderAll();
+</script>
+</body>
+</html>
